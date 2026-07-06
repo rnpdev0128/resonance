@@ -10,10 +10,10 @@ import {
 
 export function DashboardView() {
   return (
-    <div className="relative">
+    <div className="relative flex h-full min-h-0 flex-1 flex-col">
       <PageHeader title="Dashboard" className="lg:hidden" />
-       <HeroPattern />
-      <div className="relative space-y-8 p-4 lg:p-16">
+      <HeroPattern />
+      <div className="relative flex min-h-0 flex-1 flex-col space-y-8 p-4 lg:p-16">
         <DashboardHeader />
         <TextToSpeechForm defaultValues={defaultTTSValues}>
           <TextInputPanel />
@@ -23,4 +23,3 @@ export function DashboardView() {
     </div>
   );
 };
-``
