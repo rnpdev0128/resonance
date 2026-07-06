@@ -1,85 +1,81 @@
 "use client";
 
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Coins } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { GenerateButton } from "@/features/text-to-speech/components/generate-button";
-import { ttsFormOptions } from "@/features/text-to-speech/components/text-to-speech-form";
-import { useStore } from "@tanstack/react-form";
 
-import {
-    COST_PER_UNIT,
-    TEXT_MAX_LENGTH
+import { 
+  COST_PER_UNIT, 
+  TEXT_MAX_LENGTH
 } from "@/features/text-to-speech/data/constants";
-import { useTypedAppFormContext } from "@/hooks/use-app-form";
 
 export function TextInputPanel() {
+  const [text, setText] = useState("");
+  const router = useRouter();
 
-    const form = useTypedAppFormContext(ttsFormOptions);
+  const handleGenerate = () => {
+    const trimmed = text.trim();
+    if (!trimmed) return;
 
-    const text = useStore(form.store, (s) => s.values.text)
-    const isSubmitting = useStore(form.store, (s) => s.isSubmitting)
-    const isValid = useStore(form.store, (s) => s.isValid)
+    router.push(`/text-to-speech?text=${encodeURIComponent(trimmed)}`);
+  };
 
+  return (
+    <div className="
+      rounded-[22px] bg-linear-185 from-[#ff8ee3] from-15% via-[#57d7e0] via-39% to-[#dbf1f2] to-85% p-0.5 shadow-[0_0_0_4px_white]
+    ">
+      {/* Using px values for border-radius to ensure proper gradient border math (outer - padding = inner). */}
+      {/* Standard classes like rounded-4xl use CSS calc() which doesn't align cleanly at corners. */}
+      <div className="rounded-[20px] bg-[#F9F9F9] p-1">
+        <div className="space-y-4 rounded-2xl bg-white p-4 drop-shadow-xs">
+          <Textarea
+            placeholder="Start typing or paste your text here..."
+            className="min-h-35 resize-none border-0 bg-transparent p-0 shadow-none focus-visible:ring-0"
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            maxLength={TEXT_MAX_LENGTH}
+          />
 
-    return (
-        <div className="flex h-full min-h-0 flex-col flex-1">
-            <div className="relative min-h-0 flex-1">
-                <form.Field name="text">
-                    {(field) => (
-                        <Textarea
-                            value={field.state.value}
-                            onChange={(e) => field.handleChange(e.target.value)}
-                            placeholder="Start typing or paste your text here..."
-                            className="absolute inset-0 resize-none border-0 bg-transparent p-4 pb-6 lg:p-6 lg:pb-8 *:text-base! leading-relaxed tracking-tight shadow-none wrap-break-word focus-visible:ring-0"
-                            maxLength={TEXT_MAX_LENGTH}
-                            disabled={isSubmitting}
-                        />
-                    )}
-                </form.Field>
+          {/* Bottom info */}
 
-                <div className="pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-linear-to-t from-background to-transparent" />
-            </div>
-            <div className="shrink-0 p-4 lg:p-6">
-                <div className="flex flex-col gap-3 lg:hidden">
-                    <GenerateButton
-                        size="sm"
-                        disabled={isSubmitting || !isValid}
-                        isSubmitting={isSubmitting}
-                        onSubmit={() => form.handleSubmit()}
-                    />
-                </div>
-                {/* Desktop layout */}
-                {text.length > 0 ? (
-                    <div className="hidden items-center justify-between lg:flex">
-                        <Badge variant="outline" className="gap-1.5 border-dashed">
-                            <Coins className="size-3 text-chart-5" />
-                            <span className="text-xs">
-                                <span className="tabular-nums">
-                                    ${(text.length * COST_PER_UNIT).toFixed(4)}
-                                </span>&nbsp;
-                                estimated
-                            </span>
-                        </Badge>
-                        <div className="flex items-center gap-3">
-                            <p className="text-xs tracking-tight">
-                                {text.length.toLocaleString()}
-                                <span className="text-muted-foreground">
-                                    &nbsp;/&nbsp;{TEXT_MAX_LENGTH.toLocaleString()} characters
-                                </span>
-                            </p>
-                            <Button size="sm">Generate speech</Button>
-                        </div>
-                    </div>
+          <div className="flex items-center justify-between">
+            <Badge variant="outline" className="gap-1.5 border-dashed">
+              <Coins className="size-3 text-chart-5" />
+              <span className="text-xs">
+                {text.length === 0 ? (
+                  "Start typing to estimate"
                 ) : (
-                    <div className="hidden lg:block">
-                        {/* <PromptSuggestions
-                                onSelect={(prompt) => form.setFieldValue("text", prompt)}
-                            /> */}
-                    </div>
+                  <>
+                    <span className="tabular-nums">
+                      ${(text.length * COST_PER_UNIT).toFixed(4)}
+                    </span>{" "}
+                    estimated
+                  </>
                 )}
-            </div>
+              </span>
+            </Badge>
+            <span className="text-xs text-muted-foreground">
+              {text.length.toLocaleString()} / {TEXT_MAX_LENGTH.toLocaleString()} characters
+            </span>
+          </div>
         </div>
-    )
+
+        {/* Action bar */}
+
+        <div className="flex items-center justify-end p-3">
+          <Button
+            size="sm"
+            disabled={!text.trim()}
+            onClick={handleGenerate}
+            className="w-full lg:w-auto"
+          >
+            Generate speech
+          </Button>
+        </div>
+      </div>
+    </div>
+  )
 }
